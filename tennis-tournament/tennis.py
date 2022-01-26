@@ -1,220 +1,239 @@
 from player import Player
-import numpy as np
 from statistics import mode
-import itertools
-# short set format
+import logging
+from random import sample
+
+roundCounter = 1
+p1ServeFlag = False
+setCounter = 1
+logging.basicConfig(filename='tournamentSummary.log',
+                    level=logging.INFO, format='%(message)s')
+stageCount = 1
+
+# Input n can be any string or list.
+# writeMatchFixtures writes match fixtures and results to a fix.txt file.
 
 
-def getPairs(playerslist):
-    # playerslist.append(None) # To ensure that all elements are included, you could simply extend the list by None.
-    pairs = zip(playerslist[::2], playerslist[1::2])
-    #[(a,b), (c,d)]
+def writeMatchFixtures(n):
+
+    global stageCount
+
+    with open('fix.txt', 'a') as f:
+
+        if type(n) == list:
+
+            f.write(f'Stage {stageCount}')
+            f.write("\n")
+            f.write("\n")
+
+            for i in n:
+                f.write(f'{i.name}')
+                f.write("\n")
+
+            f.write("\n")
+            stageCount += 1
+            f.write("\n")
+
+        else:
+
+            f.write(n)
+            f.write("\n")
+
+
+# Input format playersList = [a,b,c]
+# getPairs takes a list and make tuples and returns a list of tuples with 2 elements in each tuple.
+# Returned format # [(a,b), (c,d)]
+def getPairs(playersList):
+
+    pairs = zip(playersList[::2], playersList[1::2])
     return list(pairs)
 
 
+# Expected input value for n = 2 or 4 or 8 or 16 or 32 or 64
+# createPlayers takes an integer n and returns a shuffled list of n number of player objects.
+# Returned format #[obj1,obj2,obj3]
 def createPlayers(n):
-    participants = {}
-    k = 0 #  Counter to check the condition
-    # while k < n:
-    for k in range(n):
-        key = f'Player{k}'
-        participants[key] = Player(f'Player{k}')
-        
-    matchmaking = list(participants.items())
-    np.random.shuffle(matchmaking)
-    matched = dict(matchmaking)
-    return matched
-    # {
-    # 'Player1':'Player()
-    # }
+
+    playersList = [Player(f'Player{player+1}') for player in range(n)]
+    return sample(playersList, len(playersList))
 
 
+# Input p1 and p2 are the player objects
+# playGame simulates a game of tennis
+# this function returns winner of each round.
 def playGame(p1, p2):
 
     p1score = 0
     p2score = 0
-    p1game = 0
-    p2game = 0
-
     n = 4
     deuce = 3
     p1PointsTable = []
     p2PointsTable = []
+
     gameFlag = False
+    global p1ServeFlag
 
-    while True:
+    logging.info('---Round Starts---')
 
-        while gameFlag == False:
-            # and p2score > 3 and p1score > 3
+    while gameFlag == False:
 
-            if (p1score == deuce and p2score == deuce):
-                print('###########')
-                print('There is a DEUCE')
-                print(f'{p1.name}', p1PointsTable)
-                print(f'{p2.name}', p2PointsTable)
-                print('###########')
-                # p1score-=2
-                # p2score-=2
-                deuce += 1
-                n = n+1
+        if (p1score == deuce and p2score == deuce):
+            logging.info('----------')
+            logging.info('DEUCE')
+            logging.info('Points Table for Deuce')
+            logging.info(f'{p1.name}:{p1PointsTable}')
+            logging.info(f'{p2.name}:{p2PointsTable}')
+            logging.info('----------')
+            deuce += 1
+            n = n+1
 
-            if p1score == n and p2score < n or sum(p1PointsTable) == n:
+        if p1score == n and p2score < n or sum(p1PointsTable) == n:
 
-                print(f'{p1.name} wins the game ')
-                print(f'{p1.name}', p1PointsTable)
-                print(f'{p2.name}', p2PointsTable)
-                # print("Player 1 score:", p1score)
-                # print("Player 2 score:", p2score)
-                p1PointsTable.clear()
-                p2PointsTable.clear()
-                p1game += 1
+            logging.info(f'{p1.name} wins Round {roundCounter} ')
+            logging.info(f'Round {roundCounter} Results')
+            logging.info(f'{p1.name}: {p1PointsTable}')
+            logging.info(f'{p2.name}:{p2PointsTable}')
+            logging.info(f"{p1.name} score: {p1score}")
+            logging.info(f"{p2.name} score: {p2score}")
+            p1PointsTable.clear()
+            p2PointsTable.clear()
 
-                gameFlag = True
-                return p1
-                
-            
+            gameFlag = True
+            return p1
 
-            if p2score == n and p1score != n or sum(p2PointsTable) == n:
-                print(f'{p2.name} wins the game ')
-                print(f'{p1.name}', p1PointsTable)
-                print(f'{p2.name}', p2PointsTable)
-                # print("Player 1 score:", p1score)
-                # print("Player 2 score:", p2score)
-                p2PointsTable.clear()
-                p1PointsTable.clear()
-                p2game += 1
-                gameFlag = True
-                return p2
-                
+        if p2score == n and p1score != n or sum(p2PointsTable) == n:
+
+            logging.info(f'{p2.name} wins Round {roundCounter} ')
+            logging.info(f'Round {roundCounter} Results')
+            logging.info(f'{p1.name}: {p1PointsTable}')
+            logging.info(f'{p2.name}:{p2PointsTable}')
+            logging.info(f"{p1.name} score: {p1score}")
+            logging.info(f"{p2.name} score: {p2score}")
+            p2PointsTable.clear()
+            p1PointsTable.clear()
+
+            gameFlag = True
+
+            return p2
+
+        if p1ServeFlag == False:
 
             if(p1.scorePoints() == 1):
                 p1score += 1
                 p1PointsTable.append(1)
                 p2PointsTable.append(0)
-                break
+                continue
 
             if (p2.scorePoints() == 1):
                 p2score += 1
                 p2PointsTable.append(1)
                 p1PointsTable.append(0)
-                break
+        else:
 
-        if gameFlag == True:
+            if (p2.scorePoints() == 1):
+                p2score += 1
+                p2PointsTable.append(1)
+                p1PointsTable.append(0)
+                continue
+            if (p1.scorePoints() == 1):
+                p1score += 1
+                p1PointsTable.append(1)
+                p2PointsTable.append(0)
 
-            break
 
-            # elif p2score ==4 and p1score==4:
-            #     p2score-=2
-            #     p1score-=2
+def changeServeFlag():
 
-            # elif p1game==4 and p1game>p2game and p1game-p2game==2:
-            #     print(f'{p1.name} wins the match ')
-            #     break
-            # elif p2game==4 and p2game>p1game and p2game-p1game>=2:
-            #     print(f'{p2.name} wins the match ')
-            #     break
-            # elif p1game ==4 and p2game ==4 and p1game-p2game !=2:
-            #     p1game-=2
-            #     p2game-=2
-            # elif p1score or p2score >10:
-            #     print('Something Wrong')
+    global p1ServeFlag
+    if p1ServeFlag == False:
+        p1ServeFlag = True
+    elif p1ServeFlag == True:
+        p1ServeFlag = False
 
 
 def playMatch(p1, p2):
+
     rounds = 6
     gameresults = []
-    for i in range(0, rounds):
-        gameresults.append(playGame(p1, p2))
+    numOfWinsP1 = 0
+    numOfWinsP2 = 0
+    global roundCounter
 
-    # print(mode(gameresults))
-    print("End of Set ")
+    for i in range(rounds):
+        logging.info(f'Round No: {roundCounter}')
+
+        gameResult = playGame(p1, p2)
+        changeServeFlag()
+        roundCounter += 1
+
+        if gameResult.name == p1.name:
+            numOfWinsP1 += 1
+        else:
+            numOfWinsP2 += 1
+        gameresults.append(gameResult)
+
+    if numOfWinsP1 == numOfWinsP2:  # If both win equal number of rounds
+        logging.info(f'Round No: {roundCounter}')
+        roundCounter += 1
+        gameresults.append(playGame(p1, p2))
+        changeServeFlag()
+
+    logging.info(f"End of Set {setCounter} ")
+
+    logging.info(f"Set {setCounter} Results ")
+
+    counter = 1
+    for game in gameresults:
+        logging.info(f'Round {counter} Results {game.name}')
+        counter += 1
+    roundCounter = 1
     return mode(gameresults)
 
 
 def playSet(p1, p2):
+    global setCounter
     set = 3
     setResults = []
+
     for i in range(0, set):
+        logging.info(f'Starting Set {setCounter}')
         setResults.append(playMatch(p1, p2))
+        setCounter += 1
 
-    print(setResults[0].name, 'Is the Winner')
-    return mode(setResults)
+    winner = mode(setResults)
+    logging.info(f'{winner.name} Is the Winner for this match')
+    writeMatchFixtures(f'{winner.name} Qualified')
 
-
-def simulateTournament(participants):
-
-    next_round = []
-    while True:
-        out = dict(itertools.islice(participants.items(), 2))
-
-        p1 = out[next(iter(out))]
-        out.pop(next(iter(out)))
-        participants.pop(next(iter(participants)))
-        p2 = out[next(iter(out))]
-        participants.pop(next(iter(participants)))
-        out.pop(next(iter(out)))
-        print(p1.name, " VS ", p2.name)
-        next_round.append(playSet(p1, p2))
-
-        if participants == {}:
-            break
-
-    return next_round
+    return winner
 
 
-def simulateRound(qualifiedplayers):
+def simulateTournament(qualifiedplayers):
 
+    writeMatchFixtures(qualifiedplayers)
     playersQualified = []
-    # while len(qualifiedplayers)!=1:
-    for i in getPairs(qualifiedplayers):
-        print("Different Round")
-        print((i[0].name, "VS", i[1].name))
-        playersQualified.append(playSet(i[0], i[1]))
-    # print(playersQualified,'YOOOO')
+    logging.info('Start of Phase')
+    for players in getPairs(qualifiedplayers):
+        writeMatchFixtures(
+            f'Match against: {players[0].name}  VS {players[1].name}')
+        logging.info(f'Match against: {players[0].name} VS {players[1].name}')
+        playersQualified.append(playSet(players[0], players[1]))
+    logging.info('End of Phase')
     if len(playersQualified) != 1:
-        #     getPairs(playersQualified)
-        #     print(playersQualified, 'YOOOO')
-        return simulateRound(playersQualified)
-        # playersQualified.clear()
-        # simulateRound(getPairs(playersQualified))
+
+        return simulateTournament(playersQualified)
+
     elif len(playersQualified) == 1:
-        return playersQualified
-    # pass
+        logging.info('End of Tournament')
+        win = f'The Winner of the Tournament is {playersQualified[0].name}'
+        logging.info(win)
+        writeMatchFixtures(win)
 
 
-participants = createPlayers(4)
-# print(participants)
-results = simulateTournament(participants)
-print(results, 'results')
-print(simulateRound(results))
+def main():
 
-# while len(results)!=1:
-#     pass
+    # Only works for powers of 2
 
-# print(participants)
-# out = dict(itertools.islice(participants.items(), 2))
-#
-# print(out)
-# out.pop(next(iter(out)))
-# out.pop(next(iter(out)))
-# print(out)
-# simulateTournament(participants)
-
-# p1=Player('John')
-# p2=Player('Rodger')
-#
-# playSet(p1,p2)
+    participants = createPlayers(8)
+    simulateTournament(participants)
 
 
-# print('Enter number of players between 2-64: ')
-# noOfPlayers = int(input())
-# print(createPlayers(noOfPlayers))
-
-
-# listOfPlayers=[]
-# for i in range(0,noOfPlayers):
-#     listOfPlayers.append(f'Player{i+1}')
-# listOfPlayers=random.sample(listOfPlayers, noOfPlayers)
-
-
-# random.shuffle(listOfPlayers)
+main()
