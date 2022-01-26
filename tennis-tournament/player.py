@@ -6,4 +6,4 @@ class Player:
         self.name = name
 
     def scorePoints(self):
-        return random.choice([0,1,0,0,1,0,0,1,0,1,0,1,0,1])
+        return random.choice([0,1])
