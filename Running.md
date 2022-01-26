@@ -1,4 +1,4 @@
-## How to run the applications on local machine <br>
+## How to run the code <br>
 
 ##Extract all the files in the same folder and run the following command
 ```
