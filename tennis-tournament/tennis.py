@@ -57,10 +57,18 @@ def createPlayers(n):
     playersList = [Player(f'Player{player+1}') for player in range(n)]
     return sample(playersList, len(playersList))
 
-
-# Input p1 and p2 are the player objects
-# playGame simulates a game of tennis
-# this function returns winner of each round.
+#playGame(playerObj1,playerObj2) expects two-player objects as parameters to play against each other.
+#playGame(playerObj1,playerObj2) expects two-player objects as parameters to play against each other.
+# This is an essential function, and it simulates how the game works in tennis. A p1ServeFlag is defined,
+# which helps switch the serve between players, so a different player serves each game.
+# Firstly, one player takes a shot and the program checks if he scores or misses; if he misses,
+# the second player takes a shot back, which continues unless someone scores.
+# The game continues until one player scores a game point, i.e. score 4 points, and there is no deuce condition,
+# and that player is then declared the winner for the game, and then the next game starts.
+# This continues for 6 rounds. If both players have 3 points, there is a deuce, and one player needs to score 2 consecutive points to win the game.
+# Therefore, a condition that checks for deuce and then increases the game-ending condition and continues
+# the matching until a player scores 2 consecutive points.
+# The function returns the player who won the game.
 def playGame(p1, p2):
 
     p1score = 0
@@ -140,7 +148,7 @@ def playGame(p1, p2):
                 p1PointsTable.append(1)
                 p2PointsTable.append(0)
 
-
+#changes the player who is serving after each game
 def changeServeFlag():
 
     global p1ServeFlag
@@ -149,7 +157,7 @@ def changeServeFlag():
     elif p1ServeFlag == True:
         p1ServeFlag = False
 
-
+#playMatch(playerObj1,playerObj2) simulates the set by calling playGame(playerObj1,playerObj2) and finally returns the result for one set.
 def playMatch(p1, p2):
 
     rounds = 6
@@ -188,7 +196,8 @@ def playMatch(p1, p2):
     roundCounter = 1
     return mode(gameresults)
 
-
+#playSet(playerObj1,playerObj2) calls playMatch(playerObj1,playerObj2) and simulates the game 6 times for each set.
+# If there are 3 sets then 18 games are played.
 def playSet(p1, p2):
     global setCounter
     set = 3
@@ -205,6 +214,14 @@ def playSet(p1, p2):
 
     return winner
 
+#simulateTournament(list) takes a list of players and starts the tournament.
+# This function is recursively called until the final winner is decided.
+# The function starts by calling getPairs(list) which returns a shuffled list of tuples,
+# where each tuple contains two player objects who will play against each other.
+# Then, it loops over the list of tuples, picking one tuple at a time and calling playSet(playerobj1,playerobj2),
+# which simulates one set a time by calling playMatch.
+# playMatch(playerObj1,playerObj2) simulates 6 round by calling playGame(playerObj1,playerObj2) for each game.
+# playGame(playerObj1,playerObj2) returns the winner for each game.
 
 def simulateTournament(qualifiedplayers):
 
@@ -218,7 +235,7 @@ def simulateTournament(qualifiedplayers):
         playersQualified.append(playSet(players[0], players[1]))
     logging.info('End of Phase')
     if len(playersQualified) != 1:
-
+        #Recursive call to continue the tournamanet until the winner is decided.
         return simulateTournament(playersQualified)
 
     elif len(playersQualified) == 1:
@@ -231,7 +248,7 @@ def simulateTournament(qualifiedplayers):
 def main():
 
     # Only works for powers of 2
-
+    # Will work for 2,4,8,16,32 and 64
     participants = createPlayers(8)
     simulateTournament(participants)
 
